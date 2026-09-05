@@ -153,7 +153,7 @@ namespace shell::dock {
     }
 
     const bool fullSurface = instance.pointerInside || (cfg.smartAutoHide && instance.smartAutoHidePinnedVisible);
-    if (fullSurface) {
+    if (fullSurface && !instance.revealTimer.active()) {
       instance.surface->setInputRegion({InputRect{0, 0, surfW, surfH}});
       return;
     }
@@ -375,6 +375,7 @@ namespace shell::dock {
   }
 
   void revealAutoHideDock(DockInstance& inst, ConfigService& config) {
+    inst.revealTimer.stop();
     const auto& cfg = config.config().dock;
     if (!dockUsesAnyAutoHide(cfg) || inst.surface == nullptr || inst.slideRoot == nullptr) {
       return;
@@ -408,6 +409,7 @@ namespace shell::dock {
   }
 
   void startHideFadeOut(DockInstance& inst, ConfigService& config) {
+    inst.revealTimer.stop();
     // xdg tooltips are not parent-transformed with the slide; destroy immediately
     // so they cannot remain pinned after auto-hide starts (#4177).
     TooltipManager::instance().forceDestroy();
